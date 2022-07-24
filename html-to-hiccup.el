@@ -51,21 +51,15 @@
 (require 'dash)
 (require 'subr-x)
 
-(defun html-to-hiccup--sexp-to-hiccup-tag (elem tag-class?)
-  "Generate Hiccup for the HTML ELEM tag + id + (iff TAG-CLASS?)
-class shorthands."
+(defun html-to-hiccup--sexp-to-hiccup-tag (elem)
+  "Generate Hiccup for the HTML ELEM tag."
   (let ((attrs (cadr elem))
         (tag (symbol-name (car elem))))
-    (concat ":" (symbol-name (car elem))
-            (when-let ((id (cdr (assoc 'id attrs))))
-              (concat "#" id)))))
+    (concat ":" (symbol-name (car elem)))))
 
-(defun html-to-hiccup--sexp-to-hiccup-attrs (attrs attrs-remove-class?)
-  "Generate a Hiccup ATTRS map with the class attribute removed
-when ATTRS-REMOVE-CLASS?."
-  (if-let ((attrs (--map (format ":%s %S" (car it) (cdr it))
-                         (assq-delete-all 'id
-                             attrs))))
+(defun html-to-hiccup--sexp-to-hiccup-attrs (attrs)
+  "Generate a Hiccup ATTRS map."
+  (if-let ((attrs (--map (format ":%s %S" (car it) (cdr it)) attrs)))
       (concat " {" (s-join " " attrs) "}")))
 
 (defun html-to-hiccup--sexp-to-hiccup-children (cs)
@@ -79,12 +73,10 @@ when ATTRS-REMOVE-CLASS?."
 (defun html-to-hiccup--sexp-to-hiccup (html-sexp)
   "Turn a html-sexp (as returned by libxml-parse-*) into a Hiccup element."
   (let* ((attrs (cadr html-sexp))
-         (class (cdr (assoc 'class attrs)))
-         ;; not all class chars are valid for shorthand syntax
-         (tag-class-shorthand? (when class (not (s-contains? "/" class)))))
+         (class (cdr (assoc 'class attrs))))
     (concat "["
-            (html-to-hiccup--sexp-to-hiccup-tag html-sexp tag-class-shorthand?)
-            (html-to-hiccup--sexp-to-hiccup-attrs attrs tag-class-shorthand?)
+            (html-to-hiccup--sexp-to-hiccup-tag html-sexp)
+            (html-to-hiccup--sexp-to-hiccup-attrs attrs)
             (html-to-hiccup--sexp-to-hiccup-children (cddr html-sexp))
             "]")))
 
