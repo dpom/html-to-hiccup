@@ -54,22 +54,18 @@
 (defun html-to-hiccup--sexp-to-hiccup-tag (elem tag-class?)
   "Generate Hiccup for the HTML ELEM tag + id + (iff TAG-CLASS?)
 class shorthands."
-  (let ((attrs (cadr elem)))
+  (let ((attrs (cadr elem))
+        (tag (symbol-name (car elem))))
     (concat ":" (symbol-name (car elem))
             (when-let ((id (cdr (assoc 'id attrs))))
-              (concat "#" id))
-            (when tag-class?
-              (when-let ((class (cdr (assoc 'class attrs))))
-                (concat "." (s-replace " " "." (s-trim class))))))))
+              (concat "#" id)))))
 
 (defun html-to-hiccup--sexp-to-hiccup-attrs (attrs attrs-remove-class?)
   "Generate a Hiccup ATTRS map with the class attribute removed
 when ATTRS-REMOVE-CLASS?."
   (if-let ((attrs (--map (format ":%s %S" (car it) (cdr it))
                          (assq-delete-all 'id
-                           (if attrs-remove-class?
-                               (assq-delete-all 'class attrs)
-                             attrs)))))
+                             attrs))))
       (concat " {" (s-join " " attrs) "}")))
 
 (defun html-to-hiccup--sexp-to-hiccup-children (cs)
